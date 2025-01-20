@@ -1,4 +1,4 @@
-# 💰 Centagate Cloud Pricing Plans
+# 💰 Centagate Pricing Plans (edited)
 
 ---
 
