@@ -1,4 +1,4 @@
-# 🌐 Centagate Cloud
+# 🌐 Centagate Cloud (Edit)
 
 Centagate Cloud is a **centralized authentication gateway** designed to secure application access seamlessly. It combines advanced authentication methods to provide a robust and user-friendly security solution for businesses.
 
