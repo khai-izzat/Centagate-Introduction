@@ -1,4 +1,4 @@
-# 💰 Centagate Pricing Plans (edited)
+# 💰 Centagate Pricing Plans
 
 ---
 
