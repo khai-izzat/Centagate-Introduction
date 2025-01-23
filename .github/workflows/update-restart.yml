@@ -1,14 +1,7 @@
 name: Update Docusaurus and Restart Docker
 name: Test VM Connectivity
 
-on:
-  push:
-    paths:
-      - "**/*.md" # Trigger only when Markdown files are changed
-    branches:
-      - main # Adjust to your default branch
-      - main  # Trigger the workflow on commits to the main branch
-
+on: push
 jobs:
   restart-docusaurus:
   test-vm:
