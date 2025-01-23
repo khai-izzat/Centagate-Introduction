@@ -1,0 +1,36 @@
+name: Update Docusaurus and Restart Docker
+
+on:
+  push:
+    paths:
+      - "**/*.md" # Trigger only when Markdown files are changed
+    branches:
+      - main # Adjust to your default branch
+
+jobs:
+  restart-docusaurus:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: SSH into VM and Update Docusaurus
+      uses: appleboy/ssh-action@v0.1.8
+      with:
+        host: ${{ secrets.VM_IP }}
+        username: ${{ secrets.VM_USER }}
+        key: ${{ secrets.VM_SSH_KEY }}
+        script: |
+          # Navigate to the Docusaurus project directory
+          cd /path/to/docusaurus
+
+          # Remove old Markdown files
+          echo "Removing old docs..."
+          rm -rf docs
+
+          # Restart Docker container
+          echo "Rebuilding and restarting Docker..."
+          docker-compose down
+          docker-compose build --no-cache
+          docker stack deploy -c docker-compose.yml docusaurus-stack
