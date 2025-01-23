@@ -8,23 +8,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Test SSH Connection Using SSH Key
-      - name: Test SSH Connection Using Key
-        run: |
-          echo "Setting up SSH key for connection..."
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.VM_IP }} >> ~/.ssh/known_hosts
-
-          echo "Testing SSH connection to VM using key..."
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.VM_USER }}@${{ secrets.VM_IP }} "echo 'SSH connection successful!'"
-
-      # Step 2: Test SSH Connection Using Password
-      - name: Test SSH Connection Using Password
+     # Step 1: Install sshpass
+      - name: Install sshpass
         run: |
           echo "Installing sshpass..."
           sudo apt-get update && sudo apt-get install -y sshpass
 
+      # Step 2: Test SSH Connection Using Password
+      - name: Test SSH Connection Using Password
+        run: |
           echo "Testing SSH connection to VM using password..."
           sshpass -p "${{ secrets.VM_PSWD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USER }}@${{ secrets.VM_IP }} "echo 'SSH connection successful!'"
