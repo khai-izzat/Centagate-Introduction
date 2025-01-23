@@ -1,38 +1,24 @@
-name: Update VM Status
+name: Access VM
 
 on:
   push:
     branches:
-      - main  # Trigger on push to the main branch
+      - main  # Trigger the workflow on push to the main branch
 
 jobs:
-  update-status:
+  access-vm:
     runs-on: ubuntu-latest
 
     steps:
-    # Step 1: Check out the repository
-    - name: Checkout Code
+    - name: Checkout repository
       uses: actions/checkout@v3
 
-    # Step 2: Access the VM via SSH
-    - name: Connect to VM
-      uses: appleboy/ssh-action@v0.1.2
+    - name: Install SSH key
+      uses: shimataro/ssh-key-action@v2
       with:
-        host: ${{ secrets.VM_HOST }}
-        username: ${{ secrets.VM_USER }}
         key: ${{ secrets.VM_SSH_KEY }}
-        script: |
-          # Navigate to the project folder or execute commands
-          cd /path/to/project
-          ./update-status.sh
+        known_hosts: 'just-a-placeholder-so-we-dont-get-errors'
 
-    # Step 3: Push Status Changes
-    - name: Commit and Push Changes
+    - name: Access VM via SSH
       run: |
-        git config --global user.name "GitHub Actions"
-        git config --global user.email "actions@github.com"
-        git add .
-        git commit -m "Update status"
-        git push origin main
-      env:
-        GITHUB_TOKEN: ${{ secrets.TOKEN_GIT }}
+        sshpass -p "${{ secrets.VM_PSWD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USER }}@${{ secrets.VM_IP }} "echo 'Successfully accessed VM!'"
