@@ -1,21 +1,38 @@
-# Update Docusaurus and Test VM Connectivity
-name: Update Docusaurus and Test VM Connectivity
+name: Update VM Status
 
-on: push
+on:
+  push:
+    branches:
+      - main  # Trigger on push to the main branch
 
 jobs:
-  test-vm:
+  update-status:
     runs-on: ubuntu-latest
 
     steps:
-     # Step 1: Install sshpass
-      - name: Install sshpass
-        run: |
-          echo "Installing sshpass..."
-          sudo apt-get update && sudo apt-get install -y sshpass
+    # Step 1: Check out the repository
+    - name: Checkout Code
+      uses: actions/checkout@v3
 
-      # Step 2: Test SSH Connection Using Password
-      - name: Test SSH Connection Using Password
-        run: |
-          echo "Testing SSH connection to VM using password..."
-          sshpass -p "${{ secrets.VM_PSWD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USER }}@${{ secrets.VM_IP }} "echo 'SSH connection successful!'"
+    # Step 2: Access the VM via SSH
+    - name: Connect to VM
+      uses: appleboy/ssh-action@v0.1.2
+      with:
+        host: ${{ secrets.VM_HOST }}
+        username: ${{ secrets.VM_USER }}
+        key: ${{ secrets.VM_SSH_KEY }}
+        script: |
+          # Navigate to the project folder or execute commands
+          cd /path/to/project
+          ./update-status.sh
+
+    # Step 3: Push Status Changes
+    - name: Commit and Push Changes
+      run: |
+        git config --global user.name "GitHub Actions"
+        git config --global user.email "actions@github.com"
+        git add .
+        git commit -m "Update status"
+        git push origin main
+      env:
+        GITHUB_TOKEN: ${{ secrets.TOKEN_GIT }}
