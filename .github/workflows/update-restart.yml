@@ -11,7 +11,7 @@ jobs:
       - name: Test VM Ping
         run: |
           echo "Pinging VM 172.19.14.44..."
-          ping 172.19.14.44 || exit 1
+          ping -c 4 172.19.14.44 || exit 1
 
       # Step 2: Test SSH Connection to the VM
       - name: Test SSH Connection
