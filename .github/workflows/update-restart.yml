@@ -10,26 +10,43 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
+    # Step 1: Checkout repository
+    - name: Checkout Repository
       uses: actions/checkout@v3
-      
+      with:
+        fetch-depth: 1  # Only fetch the latest commit to save time
+
+    # Step 2: Test VM Connectivity (Ping)
     - name: Test VM Ping
       run: |
-          echo "Pinging VM 172.19.14.44..."
-          ping -c 4 172.19.14.44 || exit 1
+        echo "Starting connectivity test with the VM at IP: ${{ secrets.VM_IP }}"
+        echo "Pinging VM..."
+        if ping -c 4 ${{ secrets.VM_IP }}; then
+          echo "Ping successful: VM is reachable."
+        else
+          echo "Ping failed: Unable to reach the VM. Exiting workflow."
+          exit 1
+        fi
 
+    # Step 3: Install sshpass (if needed for password-based SSH)
     - name: Install sshpass
       run: |
+        echo "Updating system packages and installing sshpass..."
         sudo apt-get update
         sudo apt-get install -y sshpass
-          
+        echo "sshpass installed successfully."
+
+    # Step 4: Test SSH Connection to VM
     - name: Test SSH Connection
       run: |
-        echo "Testing SSH connection to VM..."
-        sshpass -p "${{ secrets.VM_PSWD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USER }}@${{ secrets.VM_IP }} "echo 'Successfully accessed VM!'"
+        echo "Testing SSH connection to the VM at ${{ secrets.VM_IP }}..."
+        sshpass -p "${{ secrets.VM_PSWD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USER }}@${{ secrets.VM_IP }} "echo 'Connection to VM successful.'"
+        echo "SSH connection established successfully."
       env:
-        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        SSH_PRIVATE_KEY: ${{ secrets.VM_SSH_KEY }}
 
+    # Step 5: Log Connection Status
     - name: Log Connection Status
       run: |
         TIMESTAMP=$(date +"%Y-%m-%d %H:%M:%S")
+        echo "VM connection workflow completed successfully at $TIMESTAMP."
