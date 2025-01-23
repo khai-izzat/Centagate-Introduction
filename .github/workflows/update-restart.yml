@@ -23,7 +23,7 @@ jobs:
         key: ${{ secrets.VM_SSH_KEY }}
         script: |
           # Navigate to the Docusaurus project directory
-          cd /path/to/docusaurus
+          cd /home/centagateadmin/opt/docusaurus
 
           # Remove old Markdown files
           echo "Removing old docs..."
