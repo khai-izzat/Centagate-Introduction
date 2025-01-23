@@ -12,13 +12,24 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
-
-    - name: Install SSH key
-      uses: shimataro/ssh-key-action@v2
-      with:
-        key: ${{ secrets.VM_SSH_KEY }}
-        known_hosts: 'just-a-placeholder-so-we-dont-get-errors'
-
-    - name: Access VM via SSH
+      
+    - name: Test VM Ping
       run: |
+          echo "Pinging VM 172.19.14.44..."
+          ping -c 4 172.19.14.44 || exit 1
+
+    - name: Install sshpass
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y sshpass
+          
+    - name: Test SSH Connection
+      run: |
+        echo "Testing SSH connection to VM..."
         sshpass -p "${{ secrets.VM_PSWD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USER }}@${{ secrets.VM_IP }} "echo 'Successfully accessed VM!'"
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+
+    - name: Log Connection Status
+      run: |
+        TIMESTAMP=$(date +"%Y-%m-%d %H:%M:%S")
