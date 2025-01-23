@@ -1,3 +1,4 @@
+# Update Docusaurus and Test VM Connectivity
 name: Update Docusaurus and Test VM Connectivity
 
 on: push
@@ -7,27 +8,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Test connectivity to the VM (Ping Test)
-      - name: Test VM Ping
+      # Step 1: Test SSH Connection Using SSH Key
+      - name: Test SSH Connection Using Key
         run: |
-          echo "Pinging VM 172.19.14.44..."
-          ping -c 4 172.19.14.44 || exit 1
+          echo "Setting up SSH key for connection..."
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.VM_IP }} >> ~/.ssh/known_hosts
 
-      # Step 2: Test SSH Connection to the VM
-      - name: Test SSH Connection
-        run: |
-          echo "Testing SSH connection to VM..."
+          echo "Testing SSH connection to VM using key..."
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.VM_USER }}@${{ secrets.VM_IP }} "echo 'SSH connection successful!'"
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      # Step 3: Log Success
-      - name: Log Connection Status
+      # Step 2: Test SSH Connection Using Password
+      - name: Test SSH Connection Using Password
         run: |
-          TIMESTAMP=$(date +"%Y-%m-%d %H:%M:%S")
-          echo "Workflow success: ${TIMESTAMP}" >> connection_log.txt
-          git config user.name "GitHub Action"
-          git config user.email "action@github.com"
-          git add connection_log.txt
-          git commit -m "Update connection status log"
-          git push
+          echo "Installing sshpass..."
+          sudo apt-get update && sudo apt-get install -y sshpass
+
+          echo "Testing SSH connection to VM using password..."
+          sshpass -p "${{ secrets.VM_PSWD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USER }}@${{ secrets.VM_IP }} "echo 'SSH connection successful!'"
