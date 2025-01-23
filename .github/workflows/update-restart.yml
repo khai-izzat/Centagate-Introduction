@@ -14,13 +14,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      # Step 2: Test connectivity to the VM (Ping Test)
-      - name: Test VM Ping
-        run: |
-          echo "Pinging VM 172.19.14.44..."
-          ping -c 4 172.19.14.44 || exit 1
-
-      # Step 3: (Optional) Test SSH Connection to the VM
+      # Step 2: Test SSH Connection to the VM
       - name: Test SSH Connection
         run: |
           echo "Testing SSH connection to VM..."
@@ -28,7 +22,7 @@ jobs:
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      # Step 4: Log Success
+      # Step 3: Log Success
       - name: Log Connection Status
         run: |
           TIMESTAMP=$(date +"%Y-%m-%d %H:%M:%S")
