@@ -21,7 +21,11 @@ jobs:
         host: ${{ secrets.VM_IP }}
         username: ${{ secrets.VM_USER }}
         key: ${{ secrets.VM_SSH_KEY }}
+        port: 22
         script: |
+          echo "Connected successfully"
+          ls /home
+          
           # Navigate to the Docusaurus project directory
           cd /home/centagateadmin/opt/docusaurus
 
@@ -34,3 +38,4 @@ jobs:
           docker-compose down
           docker-compose build --no-cache
           docker stack deploy -c docker-compose.yml docusaurus-stack
+        debug: true
