@@ -1,34 +1,39 @@
-name: Test VM Connectivity
+name: Deploy to Server
 
-on:
-  push:
-    branches:
-      - main  # Trigger the workflow on commits to the main branch
+on: push
 
 jobs:
-  test-vm:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Check out the repository
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      # Step 2: Test SSH Connection to the VM
-      - name: Test SSH Connection
+      - name: Set up SSH key
         run: |
-          echo "Testing SSH connection to VM..."
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa centagateadmin@172.19.14.44 "echo 'SSH connection successful!'"
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          echo "Setting up SSH key..."
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VM_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -p 22 ${{ secrets.VM_HOST }} >> ~/.ssh/known_hosts
+          echo "Installing sshpass..."
+          sudo apt-get update && sudo apt-get install -y sshpass
 
-      # Step 3: Log Success
-      - name: Log Connection Status
+      - name: Deploy to Server
         run: |
-          TIMESTAMP=$(date +"%Y-%m-%d %H:%M:%S")
-          echo "Workflow success: ${TIMESTAMP}" >> connection_log.txt
-          git config user.name "GitHub Action"
-          git config user.email "action@github.com"
-          git add connection_log.txt
-          git commit -m "Update connection status log"
-          git push
+          echo "Starting deployment..."
+          sshpass -p '${{ secrets.VM_PSWD }}' ssh -v -o StrictHostKeyChecking=no ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} <<'ENDSSH'
+          # Navigate to a directory (optional)
+          cd /path/to/directory
+
+          # Edit or create the text file with a success message
+          TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+          echo "Workflow succeeded via SSH at $TIMESTAMP" >> workflow_success.txt
+
+          # Display the updated file contents for confirmation
+          cat workflow_success.txt
+          ENDSSH
+
+      - name: Confirm Deployment
+        run: echo "Deployment workflow completed successfully!"
