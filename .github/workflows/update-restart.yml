@@ -3,39 +3,6 @@ name: Update Docusaurus and Test VM Connectivity
 on: push
 
 jobs:
-  restart-docusaurus:
-    runs-on: ubuntu-latest
-
-    steps:
-      # Step 1: Check out the repository
-      - name: Checkout Repository
-        uses: actions/checkout@v3
-
-      # Step 2: SSH into VM and Update Docusaurus
-      - name: SSH into VM and Update Docusaurus
-        uses: appleboy/ssh-action@v0.1.8
-        with:
-          host: ${{ secrets.VM_IP }}
-          username: ${{ secrets.VM_USER }}
-          key: ${{ secrets.VM_SSH_KEY }}
-          port: 22
-          script: |
-            echo "Connected successfully"
-            ls /home
-            
-            # Navigate to the Docusaurus project directory
-            cd /home/centagateadmin/opt/docusaurus
-
-            # Remove old Markdown files
-            echo "Removing old docs..."
-            rm -rf docs
-
-            # Restart Docker container
-            echo "Rebuilding and restarting Docker..."
-            docker-compose down
-            docker-compose build --no-cache
-            docker stack deploy -c docker-compose.yml docusaurus-stack
-
   test-vm:
     runs-on: ubuntu-latest
 
