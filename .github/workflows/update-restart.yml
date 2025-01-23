@@ -1,41 +1,40 @@
-name: Update Docusaurus and Restart Docker
+name: Test VM Connectivity
 
 on:
   push:
-    paths:
-      - "**/*.md" # Trigger only when Markdown files are changed
     branches:
-      - main # Adjust to your default branch
+      - main  # Trigger the workflow on commits to the main branch
 
 jobs:
-  restart-docusaurus:
+  test-vm:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v3
+      # Step 1: Check out the repository
+      - name: Checkout Repository
+        uses: actions/checkout@v3
 
-    - name: SSH into VM and Update Docusaurus
-      uses: appleboy/ssh-action@v0.1.8
-      with:
-        host: ${{ secrets.VM_IP }}
-        username: ${{ secrets.VM_USER }}
-        key: ${{ secrets.VM_SSH_KEY }}
-        port: 22
-        script: |
-          echo "Connected successfully"
-          ls /home
-          
-          # Navigate to the Docusaurus project directory
-          cd /home/centagateadmin/opt/docusaurus
+      # Step 2: Test connectivity to the VM (Ping Test)
+      - name: Test VM Ping
+        run: |
+          echo "Pinging VM 172.19.14.44..."
+          ping -c 4 172.19.14.44 || exit 1
 
-          # Remove old Markdown files
-          echo "Removing old docs..."
-          rm -rf docs
+      # Step 3: (Optional) Test SSH Connection to the VM
+      - name: Test SSH Connection
+        run: |
+          echo "Testing SSH connection to VM..."
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa centagateadmin@172.19.14.44 "echo 'SSH connection successful!'"
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
-          # Restart Docker container
-          echo "Rebuilding and restarting Docker..."
-          docker-compose down
-          docker-compose build --no-cache
-          docker stack deploy -c docker-compose.yml docusaurus-stack
-        debug: true
+      # Step 4: Log Success
+      - name: Log Connection Status
+        run: |
+          TIMESTAMP=$(date +"%Y-%m-%d %H:%M:%S")
+          echo "Workflow success: ${TIMESTAMP}" >> connection_log.txt
+          git config user.name "GitHub Action"
+          git config user.email "action@github.com"
+          git add connection_log.txt
+          git commit -m "Update connection status log"
+          git push
